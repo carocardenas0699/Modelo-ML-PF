@@ -11,7 +11,7 @@ def mostrar_contacto():
     st.write("🏢 **Dirección:** Carrera 7 # 105 - 13, Bogota D.C., Colombia")
 
 
-st.image("./images/portada.jpg", width=1200)
+st.image("../App/images/portada.jpg", width=1200)
 
 
 st.title("🚕 ¡Bienvenido!")
@@ -34,7 +34,7 @@ col1, col2 = st.columns(2, gap='large', vertical_alignment='center')
 
 with col2:
     
-    st.image('images/logo.jpg', width= 350)
+    st.image('../App/images/logo.jpg', width= 350)
     
 
 with col1:
