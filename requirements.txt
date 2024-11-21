@@ -6,6 +6,7 @@ cachetools
 certifi
 charset-normalizer
 click
+cmdstanpy
 colorama
 comm
 contourpy
@@ -16,7 +17,9 @@ executing
 fonttools
 gitdb
 GitPython
+holidays
 idna
+importlib_resources
 ipykernel
 ipython
 jedi
@@ -41,6 +44,7 @@ pillow
 platformdirs
 plotly
 prompt_toolkit
+prophet
 protobuf
 psutil
 pure_eval
@@ -50,7 +54,6 @@ Pygments
 pyparsing
 python-dateutil
 pytz
-#pywin32
 pyzmq
 referencing
 requests
@@ -59,10 +62,12 @@ rpds-py
 six
 smmap
 stack-data
+stanio
 streamlit
 tenacity
 toml
 tornado
+tqdm
 traitlets
 typing_extensions
 tzdata

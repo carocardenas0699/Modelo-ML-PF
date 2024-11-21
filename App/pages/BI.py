@@ -14,3 +14,8 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+st.header('Prediccion de costos y emisiones')
+
+per = st.slider('Porcentaje de vehiculos electricos 🍃:', 0, 100)
+per = per / 100
