@@ -5,6 +5,8 @@ import json
 from prophet.serialize import model_from_json
 from plotly import graph_objs as go
 from prophet.serialize import model_to_json, model_from_json
+
+
 st.cache_data.clear()
 st.cache_resource.clear()
 
@@ -57,7 +59,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-n_months = st.slider('Meses:', 1, 18)
+n_months = st.slider('Meses:', 0, 18)
 
 with open('../App/json_model/serialized_model.json', 'r') as fin:
     modelo_prophet = model_from_json(fin.read())
@@ -81,15 +83,57 @@ pred = pred.round(2)
 pred['Numero total de pasajeros'] = pred['Numero total de pasajeros'].astype(int)
 pred['Numero total de viajes'] = pred['Numero total de viajes'].astype(int)
 
-st.write(pred)
-
+if n_months == 0:
+     st.write('Estos son los valores historicos')
+else:
+     st.write(pred[30:])
 #---------
+# Crear la gráfica combinada de históricos y pronósticos
+fig = go.Figure()
+
+# Datos históricos (línea azul)
+fig.add_trace(go.Scatter(
+    x=histo['Fecha'], 
+    y=histo['Numero total de viajes'],
+    mode='lines', 
+    name='Datos Históricos',
+    line=dict(color='blue')  # Línea azul
+))
+
+# Pronósticos (línea roja punteada)
+fig.add_trace(go.Scatter(
+    x=forecast['Fecha'], 
+    y=forecast['Numero total de viajes'],
+    mode='lines', 
+    name='Pronósticos',
+    line=dict(color='red', dash='dash')  # Línea roja punteada
+))
+
+# Configuración del gráfico
+fig.update_layout(
+    title='Datos Históricos y Pronósticos de Número de Viajes',
+    xaxis_title='Fecha',
+    yaxis_title='Número total de viajes',
+    title_font=dict(size=24),
+    xaxis_rangeslider_visible=True
+)
+
+# Mostrar la gráfica en Streamlit
+st.plotly_chart(fig)
+#---------
+
+total_viajes = pred['Numero total de viajes'][30:].sum()
+
+st.metric(f"Numero total de viajes en {n_months} meses:", f"{total_viajes:,}")
+
 plot_historic(pred[:n_months],'futuros')
+pred.to_csv('../App/pred.csv')
+
 
 st.markdown('***')
 # Calcular valores de predicción total (en USD) y total de viajes (número de viajes) 
 total_usd = pred['Ingreso total (USD)'].head(n_months).sum()  # Sumar los ingresos en USD de los primeros meses seleccionados
-total_viajes = pred['Numero total de pasajeros'].head(n_months).sum()
+total_pas = pred['Numero total de pasajeros'].head(n_months).sum()
 total_dist = pred['Distancia total recorrida (mi)'].head(n_months).sum() 
 total_dur = pred['Duración total recorrido (min)'].head(n_months).sum() / 60  # Sumar el número de viajes de los primeros meses seleccionados
 
@@ -98,31 +142,10 @@ col1, col2 = st.columns(2, gap='large', vertical_alignment='center')
     
 with col1:
     # Mostrar los valores en una ventana
-    st.metric("Total de Pasajeros 👫", f"{total_viajes:,}")
+    st.metric("Total de Pasajeros 👫", f"{total_pas:,}")
     st.metric("Total Ingresos (USD) 💵", f"${total_usd:,.2f}")   
 
 with col2:
     st.metric("Total Distancia recorrida (mi) 🌐", f"{total_dist:,.2f}")
     st.metric("Total Tiempo recorrido (hrs) ⏱", f"{total_dur:,.2f}")  
 
-st.markdown('***')
-st.subheader('Prediccion de costos y emisiones')
-
-per = st.slider('Porcentaje de vehiculos electricos 🍃:', 0, 100)
-per = per / 100
-
-col1, col2 = st.columns(2, gap='large', vertical_alignment='center')
-
-co2 = total_dist*(411/1000000)*(1-per)
-cost_gas = (total_dist/40)*3.42*(1-per)
-eff = 170
-cons_kw = ((total_dist*per*1.60934)*eff)/1000
-cost_kw = cons_kw*0.3
-
-with col1:
-     st.metric("Costo de gasolina (USD)", f"${cost_gas:,.2f}")
-     st.metric("Costo de watts (USD)", f"${cost_kw:,.2f}")
-     st.metric("Costo total de combustible (USD)", f"${(cost_kw+cost_gas):,.2f}")
-
-with col2:
-     st.metric("Total emisiones de CO2 (ton)", f"{co2:,.2f}")
